@@ -1,5 +1,12 @@
 {
-  "plugins": [
-    "expo-router"
-  ]
+  "expo": {
+    "name": "Broda Meko",
+    "slug": "broda-meko",
+    "scheme": "brodameko",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ]
+  }
 }
