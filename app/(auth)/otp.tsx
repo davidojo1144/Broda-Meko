@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
 import { requestOtp, verifyOtp } from '../../lib/api/auth.api';
@@ -96,102 +96,105 @@ export default function Otp (){
 
   return (
     <SafeAreaView className="flex-1 bg-[#093275]">
-      <View className="px-6 pt-6">
-        <Text className="text-white text-2xl font-bold">BrodaMeko</Text>
-        <Pressable onPress={() => router.back()}>
-          <Text className="text-white mt-2">{'< Back'}</Text>
-        </Pressable>
-      </View>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={24}>
+        <View className="px-6 pt-6">
+          <Text className="text-white text-2xl font-bold">BrodaMeko</Text>
+          <Pressable onPress={() => router.back()}>
+            <Text className="text-white mt-2">{'< Back'}</Text>
+          </Pressable>
+        </View>
 
-      {step === 'request' && (
-        <View className="flex-1 px-6 mt-6">
-          <Text className="text-white text-2xl font-semibold">Get Started in Seconds</Text>
-          <Text className="text-gray-200 mt-2">
-            Enter your phone number to get started. We'll send a one-time code to verify your account.
-          </Text>
+        {step === 'request' && (
+          <View className="flex-1 px-6 mt-6">
+            <Text className="text-white text-2xl font-semibold">Get Started in Seconds</Text>
+            <Text className="text-gray-200 mt-2">
+              Enter your phone number to get started. We'll send a one-time code to verify your account.
+            </Text>
 
-          <Text className="text-white mt-6 mb-2">Phone Number</Text>
-          <TextInput
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            className="h-12 rounded-md bg-[#173b78] px-4 text-white"
-            placeholder="Enter phone number"
-            placeholderTextColor="#93a4c9"
-          />
+            <Text className="text-white mt-6 mb-2">Phone Number</Text>
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              className="h-12 rounded-md bg-[#173b78] px-4 text-white"
+              placeholder="Enter phone number"
+              placeholderTextColor="#93a4c9"
+              returnKeyType="done"
+            />
 
-          <View className="mt-auto mb-6">
-            <TouchableOpacity
-              disabled={sending}
-              onPress={handleSend}
-              className="bg-yellow-400 rounded-lg h-12 items-center justify-center"
-            >
-              {sending ? (
-                <ActivityIndicator color="#000" />
-              ) : (
-                <Text className="text-black font-semibold">Create Account</Text>
-              )}
-            </TouchableOpacity>
-            <View className="flex-row justify-center mt-4">
-              <Text className="text-white">Already have an account? </Text>
-              <Pressable onPress={() => {}}>
-                <Text className="text-yellow-400 font-semibold">Sign in</Text>
-              </Pressable>
+            <View className="mt-auto mb-6">
+              <TouchableOpacity
+                disabled={sending}
+                onPress={handleSend}
+                className="bg-yellow-400 rounded-lg h-12 items-center justify-center"
+              >
+                {sending ? (
+                  <ActivityIndicator color="#000" />
+                ) : (
+                  <Text className="text-black font-semibold">Create Account</Text>
+                )}
+              </TouchableOpacity>
+              <View className="flex-row justify-center mt-4">
+                <Text className="text-white">Already have an account? </Text>
+                <Pressable onPress={() => {}}>
+                  <Text className="text-yellow-400 font-semibold">Sign in</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {step === 'verify' && (
-        <View className="flex-1 px-6 mt-6">
-          <Text className="text-white text-2xl font-semibold">Verify Your Phone Number</Text>
-          <Text className="text-gray-200 mt-2">
-            Enter the verification code sent to{' '}
-            <Text className="text-white font-semibold">+234 {normalizePhone(phone)}</Text> to secure your account.
-          </Text>
+        {step === 'verify' && (
+          <View className="flex-1 px-6 mt-6">
+            <Text className="text-white text-2xl font-semibold">Verify Your Phone Number</Text>
+            <Text className="text-gray-200 mt-2">
+              Enter the verification code sent to{' '}
+              <Text className="text-white font-semibold">+234 {normalizePhone(phone)}</Text> to secure your account.
+            </Text>
 
-          <View className="flex-row justify-between mt-8">
-            {[0,1,2,3,4,5].map((i) => (
-              <TextInput
-                key={`d-${i}`}
-                ref={(el) => (inputs.current[i] = el)}
-                value={codeDigits[i]}
-                onChangeText={(v) => updateDigit(i, v)}
-                onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
-                keyboardType="number-pad"
-                className="w-12 h-12 rounded-md bg-[#173b78] text-white text-center"
-                maxLength={6}
-              />
-            ))}
-          </View>
+            <View className="flex-row justify-between mt-8">
+              {[0,1,2,3,4,5].map((i) => (
+                <TextInput
+                  key={`d-${i}`}
+                  ref={(el) => (inputs.current[i] = el)}
+                  value={codeDigits[i]}
+                  onChangeText={(v) => updateDigit(i, v)}
+                  onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
+                  keyboardType="number-pad"
+                  className="w-12 h-12 rounded-md bg-[#173b78] text-white text-center"
+                  maxLength={6}
+                />
+              ))}
+            </View>
 
-          <View className="mt-4">
-            {countdown > 0 ? (
-              <Text className="text-gray-200">
-                Didn’t receive the code? <Text className="text-yellow-400">Resend in {countdown}s</Text>
-              </Text>
-            ) : (
-              <Pressable onPress={handleSend}>
-                <Text className="text-yellow-400">Resend code</Text>
-              </Pressable>
-            )}
-          </View>
-
-          <View className="mt-auto mb-6">
-            <TouchableOpacity
-              disabled={verifying}
-              onPress={handleVerify}
-              className="bg-yellow-400 rounded-lg h-12 items-center justify-center"
-            >
-              {verifying ? (
-                <ActivityIndicator color="#000" />
+            <View className="mt-4">
+              {countdown > 0 ? (
+                <Text className="text-gray-200">
+                  Didn’t receive the code? <Text className="text-yellow-400">Resend in {countdown}s</Text>
+                </Text>
               ) : (
-                <Text className="text-black font-semibold">Verify Number</Text>
+                <Pressable onPress={handleSend}>
+                  <Text className="text-yellow-400">Resend code</Text>
+                </Pressable>
               )}
-            </TouchableOpacity>
+            </View>
+
+            <View className="mt-auto mb-6">
+              <TouchableOpacity
+                disabled={verifying}
+                onPress={handleVerify}
+                className="bg-yellow-400 rounded-lg h-12 items-center justify-center"
+              >
+                {verifying ? (
+                  <ActivityIndicator color="#000" />
+                ) : (
+                  <Text className="text-black font-semibold">Verify Number</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      )}
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
