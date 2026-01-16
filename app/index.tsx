@@ -3,6 +3,7 @@ import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { onboarding as onboardingData } from '../lib/Onboarding';
 import { useRef, useState } from 'react';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -42,14 +43,14 @@ export default function OnboardingScreen() {
       </View>
       <View className="w-full px-6 mt-6 mb-6">
         <TouchableOpacity
-          onPress={() => {}}
+          onPress={() => router.push('/(auth)/otp')}
           className="bg-yellow-400 rounded-lg h-12 items-center justify-center"
         >
           <Text className="text-black font-semibold">Create Account</Text>
         </TouchableOpacity>
         <View className="flex-row justify-center gap-2 mt-4">
           <Text className="text-white">Already have an account? </Text>
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity onPress={() => router.push('/(auth)/otp')}>
             <Text className="text-yellow-400 font-semibold">Sign in</Text>
           </TouchableOpacity>
         </View>

@@ -6,4 +6,7 @@ declare module 'react-native' {
   export const Pressable: any;
   export const Dimensions: any;
   export const TouchableOpacity: any;
+  export const TextInput: any;
+  export const ActivityIndicator: any;
+  export const Alert: any;
 }
