@@ -5,4 +5,5 @@ declare module 'react-native' {
   export const FlatList: any;
   export const Pressable: any;
   export const Dimensions: any;
+  export const TouchableOpacity: any;
 }
