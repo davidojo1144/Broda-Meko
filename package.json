@@ -1,0 +1,44 @@
+{
+  "name": "broda-meko",
+  "version": "1.0.0",
+  "description": "",
+  "main": "expo-router/entry",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "expo start --web",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidojo1144/Broda-Meko.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/davidojo1144/Broda-Meko/issues"
+  },
+  "homepage": "https://github.com/davidojo1144/Broda-Meko#readme",
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "^54.0.31",
+    "expo-router": "~6.0.21",
+    "expo-status-bar": "^3.0.9",
+    "nativewind": "^4.2.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-native": "^0.83.1",
+    "react-native-responsive-screen": "^1.4.2",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.8",
+    "@types/react-native": "^0.72.8",
+    "babel-preset-expo": "^54.0.9",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
+  }
+}
