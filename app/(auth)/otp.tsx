@@ -41,8 +41,11 @@ export default function Otp (){
     if (!email || !email.includes('@')) return;
     try {
       setSending(true);
-      const res = await requestOtp({ phoneNumber: normalized, email, userType: 'owner' });
+      const payload = { phoneNumber: normalized, email, userType: 'owner' };
+      console.log('[OTP] request payload', payload);
+      const res = await requestOtp(payload);
       if (res?.success) {
+        console.log('[OTP] request success', res?.message ?? 'OTP sent', res);
         show('OTP sent successfully', 'success');
         setStep('verify');
         setCodeDigits(['','','','','','']);
@@ -52,7 +55,9 @@ export default function Otp (){
         }
       }
     } catch (e) {
-      show(e?.response?.data?.message || 'Failed to send OTP', 'error');
+      const msg = (e as any)?.response?.data?.message || 'Failed to send OTP';
+      console.log('[OTP] request error', msg, (e as any)?.response?.data || e);
+      show(msg, 'error');
     } finally {
       setSending(false);
     }
@@ -63,13 +68,18 @@ export default function Otp (){
     if (code.length !== 6) return;
     try {
       setVerifying(true);
-      const res = await verifyOtp({ phoneNumber: normalizePhone(phone), email, otp: code, userType: 'owner' });
+      const payload = { phoneNumber: normalizePhone(phone), email, otp: code, userType: 'owner' };
+      console.log('[OTP] verify payload', payload);
+      const res = await verifyOtp(payload);
       if (res?.success) {
+        console.log('[OTP] verify success', res?.message ?? 'Authentication successful', res);
         show('Authentication successful', 'success');
         router.replace('/');
       }
     } catch (e) {
-      show(e?.response?.data?.message || 'Invalid or expired code', 'error');
+      const msg = (e as any)?.response?.data?.message || 'Invalid or expired code';
+      console.log('[OTP] verify error', msg, (e as any)?.response?.data || e);
+      show(msg, 'error');
     } finally {
       setVerifying(false);
     }
