@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -20,8 +21,9 @@ export function useToast() {
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<ToastState | null>(null);
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(20)).current;
+  const translateY = useRef(new Animated.Value(-20)).current;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const insets = useSafeAreaInsets();
 
   const show = useCallback((text: string, type: ToastType = 'info', duration = 3000) => {
     if (timer.current) {
@@ -40,7 +42,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     timer.current = setTimeout(() => {
       Animated.parallel([
         Animated.timing(opacity, { toValue: 0, duration: 200, easing: Easing.in(Easing.quad), useNativeDriver: true }),
-        Animated.timing(translateY, { toValue: 20, duration: 200, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: -20, duration: 200, easing: Easing.in(Easing.quad), useNativeDriver: true }),
       ]).start(() => setToast(null));
     }, toast.duration ?? 3000);
   }, [toast, opacity, translateY]);
@@ -55,7 +57,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ show }}>
       {children}
       {toast && (
-        <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 40, alignItems: 'center' }}>
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 16, alignItems: 'center' }}>
           <Animated.View
             style={{
               opacity,
