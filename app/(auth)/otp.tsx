@@ -1,19 +1,22 @@
 import { View, Text, Pressable, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
-import { requestOtp, } from '../../lib/api/auth.api';
+import { requestOtp, verifyOtp } from '../../lib/api/auth.api';
 import { router } from 'expo-router';
+import { useToast } from '../../lib/ui/toast';
 
 
 export default function Otp (){
 
   const [step, setStep] = useState<'request'|'verify'>('request');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [codeDigits, setCodeDigits] = useState<string[]>(['','','','','','']);
   const inputs = useRef<Array<any>>([]);
   const [countdown, setCountdown] = useState<number>(45);
+  const { show } = useToast();
 
   useEffect(() => {
     if (step !== 'verify') return;
@@ -35,10 +38,12 @@ export default function Otp (){
   async function handleSend() {
     const normalized = normalizePhone(phone);
     if (!normalized || normalized.length < 10) return;
+    if (!email || !email.includes('@')) return;
     try {
       setSending(true);
-      const res = await requestOtp(normalized);
+      const res = await requestOtp({ phoneNumber: normalized, email, userType: 'owner' });
       if (res?.success) {
+        show('OTP sent successfully', 'success');
         setStep('verify');
         setCodeDigits(['','','','','','']);
         inputs.current[0]?.focus();
@@ -47,6 +52,7 @@ export default function Otp (){
         }
       }
     } catch (e) {
+      show(e?.response?.data?.message || 'Failed to send OTP', 'error');
     } finally {
       setSending(false);
     }
@@ -57,11 +63,13 @@ export default function Otp (){
     if (code.length !== 6) return;
     try {
       setVerifying(true);
-      const res = await verifyOtp({ phoneNumber: normalizePhone(phone), otp: code });
+      const res = await verifyOtp({ phoneNumber: normalizePhone(phone), email, otp: code, userType: 'owner' });
       if (res?.success) {
+        show('Authentication successful', 'success');
         router.replace('/');
       }
     } catch (e) {
+      show(e?.response?.data?.message || 'Invalid or expired code', 'error');
     } finally {
       setVerifying(false);
     }
@@ -108,8 +116,20 @@ export default function Otp (){
           <View className="flex-1 px-6 mt-6">
             <Text className="text-white text-2xl font-semibold">Get Started in Seconds</Text>
             <Text className="text-gray-200 mt-2">
-              Enter your phone number to get started. We'll send a one-time code to verify your account.
+              Enter your email and phone number. We'll send a one-time code to verify your account.
             </Text>
+
+            <Text className="text-white mt-6 mb-2">Email Address</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              className="h-12 rounded-md bg-[#173b78] px-4 text-white"
+              placeholder="Enter email address"
+              placeholderTextColor="#93a4c9"
+              returnKeyType="next"
+              autoCapitalize="none"
+            />
 
             <Text className="text-white mt-6 mb-2">Phone Number</Text>
             <TextInput
@@ -146,10 +166,10 @@ export default function Otp (){
 
         {step === 'verify' && (
           <View className="flex-1 px-6 mt-6">
-            <Text className="text-white text-2xl font-semibold">Verify Your Phone Number</Text>
+            <Text className="text-white text-2xl font-semibold">Verify Your Email</Text>
             <Text className="text-gray-200 mt-2">
               Enter the verification code sent to{' '}
-              <Text className="text-white font-semibold">+234 {normalizePhone(phone)}</Text> to secure your account.
+              <Text className="text-white font-semibold">{email}</Text>.
             </Text>
 
             <View className="flex-row justify-between mt-8">

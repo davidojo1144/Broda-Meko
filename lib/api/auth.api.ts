@@ -30,11 +30,66 @@ export function setAccessToken(token: string | null) {
   }
 }
 
-export async function requestOtp(phoneNumber: string) {
-  const res = await client.post<ApiSuccess<{ expiresIn: number }>>('/auth/request-otp', {
-    phoneNumber,
-  });
+export async function requestOtp(
+  payload: string | { phoneNumber?: string; email: string; userType: string }
+) {
+  const body =
+    typeof payload === 'string' ? { phoneNumber: payload } : payload;
+  const res = await client.post<ApiSuccess<{ expiresIn: number }>>(
+    '/auth/request-otp',
+    body
+  );
   return res.data;
 }
 
-  
+export async function verifyOtp(payload: {
+  phoneNumber?: string;
+  email: string;
+  otp: string;
+  userType: string;
+}) {
+  const res = await client.post<
+    ApiSuccess<{
+      user: {
+        _id: string;
+        phoneNumber: string;
+        roles: string[];
+        isActive: boolean;
+        createdAt: string;
+      };
+      accessToken: string;
+      refreshToken: string;
+      expiresIn: number;
+    }>
+  >('/auth/verify-otp', payload);
+  return res.data;
+}
+
+export async function refreshToken(refreshTokenValue: string) {
+  const res = await client.post<ApiSuccess<{ accessToken: string; expiresIn: number }>>(
+    '/auth/refresh-token',
+    { refreshToken: refreshTokenValue }
+  );
+  return res.data;
+}
+
+export async function logout() {
+  const res = await client.post<ApiSuccess<unknown>>('/auth/logout');
+  return res.data;
+}
+
+export async function getMe() {
+  const res = await client.get<
+    ApiSuccess<{
+      user: {
+        _id: string;
+        phoneNumber: string;
+        roles: string[];
+        isActive: boolean;
+        verificationStatus?: string;
+        createdAt: string;
+      };
+    }>
+  >('/auth/me');
+  return res.data;
+}

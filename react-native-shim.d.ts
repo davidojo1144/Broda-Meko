@@ -11,4 +11,6 @@ declare module 'react-native' {
   export const Alert: any;
   export const KeyboardAvoidingView: any;
   export const Platform: any;
+  export const Animated: any;
+  export const Easing: any;
 }
