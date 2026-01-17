@@ -1,12 +1,36 @@
 import { View, Text, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getMe } from '../../lib/api/auth.api';
+import { useToast } from '../../lib/ui/toast';
 
 const { width } = Dimensions.get('window');
 
 export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [user, setUser] = useState<any>(null);
+  const { show } = useToast();
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await getMe();
+        if (res?.success || (res as any)?.status === 'success') {
+          // Handle both structure variations just in case
+          setUser(res.data?.user || (res as any)?.data);
+        }
+      } catch (e) {
+        console.log('Failed to fetch user', e);
+      }
+    }
+    fetchUser();
+  }, []);
+
+  // Extract first name from email if name is not available
+  const displayName = user?.email ? user.email.split('@')[0] : 'User';
+  // Capitalize first letter
+  const formattedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
 
   return (
     <SafeAreaView className="flex-1 bg-[#093275]" edges={['top']}>
@@ -14,11 +38,12 @@ export default function Home() {
         {/* Header */}
         <View className="px-6 py-4 flex-row justify-between items-center">
           <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
-              <Image 
-                source={{ uri: 'https://via.placeholder.com/40' }} 
-                className="w-full h-full" 
-              />
+            <View className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden items-center justify-center">
+              {user?.email ? (
+                 <Text className="text-lg font-bold text-gray-700">{user.email.charAt(0).toUpperCase()}</Text>
+              ) : (
+                <Ionicons name="person" size={24} color="#555" />
+              )}
             </View>
             <View>
               <Text className="text-yellow-400 text-xs font-bold">CURRENT LOCATION</Text>
@@ -36,7 +61,7 @@ export default function Home() {
         {/* Greeting */}
         <View className="px-6 mt-4">
           <Text className="text-white text-3xl font-bold">
-            Drive fearlessly, <Text className="text-yellow-400">Tunde.</Text>
+            Drive fearlessly, <Text className="text-yellow-400">{formattedName}.</Text>
           </Text>
           <Text className="text-gray-300 mt-2 text-base">
             Your 2022 Range Rover is in good health.

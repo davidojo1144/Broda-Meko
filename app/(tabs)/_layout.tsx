@@ -13,7 +13,7 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: '#093275',
           borderTopWidth: 0,
-          height: 60 + insets.bottom,
+          height: 50 + insets.bottom,
           paddingBottom: insets.bottom,
         },
         tabBarActiveTintColor: '#FACC15',
@@ -25,9 +25,9 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size, focused }) => (
-            <View className="items-center justify-center">
+            <View className="items-center justify-center" style={{ minWidth: 50 }}>
               <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
-              <Text style={{ color, fontSize: 10, marginTop: 4 }}>HOME</Text>
+              <Text style={{ color, fontSize: 9, marginTop: 4, fontWeight: '500' }} numberOfLines={1}>HOME</Text>
             </View>
           ),
           tabBarShowLabel: false,
@@ -38,9 +38,9 @@ export default function TabLayout() {
         options={{
           title: 'Bookings',
           tabBarIcon: ({ color, size, focused }) => (
-            <View className="items-center justify-center">
+            <View className="items-center justify-center" style={{ minWidth: 70 }}>
               <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
-              <Text style={{ color, fontSize: 10, marginTop: 4 }}>BOOKINGS</Text>
+              <Text style={{ color, fontSize: 9, marginTop: 4, fontWeight: '500' }} numberOfLines={1}>BOOKINGS</Text>
             </View>
           ),
           tabBarShowLabel: false,
@@ -51,9 +51,9 @@ export default function TabLayout() {
         options={{
           title: 'Wallet',
           tabBarIcon: ({ color, size, focused }) => (
-            <View className="items-center justify-center">
+            <View className="items-center justify-center" style={{ minWidth: 50 }}>
               <Ionicons name={focused ? 'wallet' : 'wallet-outline'} size={24} color={color} />
-              <Text style={{ color, fontSize: 10, marginTop: 4 }}>WALLET</Text>
+              <Text style={{ color, fontSize: 9, marginTop: 4, fontWeight: '500' }} numberOfLines={1}>WALLET</Text>
             </View>
           ),
           tabBarShowLabel: false,
@@ -64,9 +64,9 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size, focused }) => (
-            <View className="items-center justify-center">
+            <View className="items-center justify-center" style={{ minWidth: 50 }}>
               <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
-              <Text style={{ color, fontSize: 10, marginTop: 4 }}>PROFILE</Text>
+              <Text style={{ color, fontSize: 9, marginTop: 4, fontWeight: '500' }} numberOfLines={1}>PROFILE</Text>
             </View>
           ),
           tabBarShowLabel: false,

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { requestOtp, verifyOtp } from '../../lib/api/auth.api';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useToast } from '../../lib/ui/toast';
+import { saveAuthTokens } from '../../lib/storage';
+import { setAccessToken } from '../../lib/api/auth.api';
 
 export default function VerifyEmail() {
   const { email } = useLocalSearchParams<{ email: string }>();
@@ -51,6 +53,13 @@ export default function VerifyEmail() {
       // Check for status='success' (backend) or success=true (legacy/wrapper)
       if (res?.status === 'success' || (res as any)?.success) {
         console.log('[OTP] verify success', res?.message ?? 'Authentication successful', res);
+        
+        // Save tokens
+        if (res.data?.accessToken && res.data?.refreshToken) {
+            await saveAuthTokens(res.data.accessToken, res.data.refreshToken);
+            setAccessToken(res.data.accessToken);
+        }
+
         show('Authentication successful', 'success');
         router.replace('/(tabs)');
       } else {
