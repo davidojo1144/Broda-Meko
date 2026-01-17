@@ -48,10 +48,14 @@ export default function VerifyEmail() {
       const payload = { email: email!, otp: code };
       console.log('[OTP] verify payload', payload);
       const res = await verifyOtp(payload);
-      if (res?.success) {
+      // Check for status='success' (backend) or success=true (legacy/wrapper)
+      if (res?.status === 'success' || (res as any)?.success) {
         console.log('[OTP] verify success', res?.message ?? 'Authentication successful', res);
         show('Authentication successful', 'success');
         router.replace('/(tabs)');
+      } else {
+        console.log('[OTP] verify failed with status:', res?.status, res);
+        show(res?.message || 'Verification failed', 'error');
       }
     } catch (e) {
       const msg = (e as any)?.response?.data?.message || 'Invalid or expired code';

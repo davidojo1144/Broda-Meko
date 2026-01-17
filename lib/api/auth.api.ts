@@ -37,21 +37,23 @@ export async function requestOtp(email: string) {
   return res.data;
 }
 
+export type VerifyOtpResponse = {
+  status: string; // "success"
+  message: string;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    user: {
+      id: string;
+      email: string;
+      roles: string[];
+      isNew: boolean;
+    };
+  };
+};
+
 export async function verifyOtp(payload: { email: string; otp: string }) {
-  const res = await client.post<
-    ApiSuccess<{
-      user: {
-        _id: string;
-        phoneNumber: string;
-        roles: string[];
-        isActive: boolean;
-        createdAt: string;
-      };
-      accessToken: string;
-      refreshToken: string;
-      expiresIn: number;
-    }>
-  >('/auth/verify-otp', payload);
+  const res = await client.post<VerifyOtpResponse>('/auth/verify-otp', payload);
   return res.data;
 }
 

@@ -17,7 +17,7 @@ export default function RequestOtp() {
     }
     try {
       setSending(true);
-      const payload = { email, userType: 'owner' };
+      const payload = { email };
       console.log('[OTP] request payload', payload);
       // Pass the object so auth.api.ts stringifies it correctly or handles it
       const res = await requestOtp(email);
