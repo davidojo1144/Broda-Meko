@@ -1,7 +1,7 @@
 import { View, Text, Pressable, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
-import { requestOtp, verifyOtp } from '../../lib/api/auth.api';
+import { requestOtp, } from '../../lib/api/auth.api';
 import { router } from 'expo-router';
 
 
