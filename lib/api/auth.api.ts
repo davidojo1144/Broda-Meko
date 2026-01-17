@@ -30,24 +30,14 @@ export function setAccessToken(token: string | null) {
   }
 }
 
-export async function requestOtp(
-  payload: string | { phoneNumber?: string; email: string; userType: string }
-) {
-  const body =
-    typeof payload === 'string' ? { phoneNumber: payload } : payload;
-  const res = await client.post<ApiSuccess<{ expiresIn: number }>>(
-    '/auth/request-otp',
-    body
-  );
+export async function requestOtp(email: string) {
+  const res = await client.post<ApiSuccess<{ expiresIn: number }>>('/auth/request-otp', {
+    email,
+  });
   return res.data;
 }
 
-export async function verifyOtp(payload: {
-  phoneNumber?: string;
-  email: string;
-  otp: string;
-  userType: string;
-}) {
+export async function verifyOtp(payload: { email: string; otp: string }) {
   const res = await client.post<
     ApiSuccess<{
       user: {

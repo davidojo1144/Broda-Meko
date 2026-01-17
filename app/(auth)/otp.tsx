@@ -1,58 +1,45 @@
 import { View, Text, Pressable, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useRef, useState } from 'react';
-import { requestOtp, verifyOtp } from '../../lib/api/auth.api';
+import { useState } from 'react';
+import { requestOtp } from '../../lib/api/auth.api';
 import { router } from 'expo-router';
 import { useToast } from '../../lib/ui/toast';
 
-
-export default function Otp (){
-
-  const [step, setStep] = useState<'request'|'verify'>('request');
-  const [phone, setPhone] = useState('');
+export default function RequestOtp() {
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-  const [codeDigits, setCodeDigits] = useState<string[]>(['','','','','','']);
-  const inputs = useRef<Array<any>>([]);
-  const [countdown, setCountdown] = useState<number>(45);
   const { show } = useToast();
 
-  useEffect(() => {
-    if (step !== 'verify') return;
-    setCountdown(45);
-    const id = setInterval(() => {
-      setCountdown((c) => (c > 0 ? c - 1 : 0));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [step]);
-
-  function normalizePhone(input: string) {
-    const trimmed = input.replace(/\s+/g, '');
-    if (trimmed.startsWith('+234')) return trimmed.slice(4);
-    if (trimmed.startsWith('234')) return trimmed.slice(3);
-    if (trimmed.startsWith('0')) return trimmed.slice(1);
-    return trimmed;
-  }
-
   async function handleSend() {
-    const normalized = normalizePhone(phone);
-    if (!normalized || normalized.length < 10) return;
-    if (!email || !email.includes('@')) return;
+    if (!email || !email.includes('@')) {
+        show('Please enter a valid email address', 'error');
+        return;
+    }
     try {
       setSending(true);
-      const payload = { phoneNumber: normalized, email, userType: 'owner' };
+      const payload = { email, userType: 'owner' };
       console.log('[OTP] request payload', payload);
-      const res = await requestOtp(payload);
-      if (res?.success) {
-        console.log('[OTP] request success', res?.message ?? 'OTP sent', res);
+      // Pass the object so auth.api.ts stringifies it correctly or handles it
+      const res = await requestOtp(email);
+      console.log('[OTP] raw response:', JSON.stringify(res, null, 2));
+      
+      // Check for success property or if data exists (some APIs return just data on success)
+      if (res?.success || (res?.data && !res.error)) {
+        console.log('[OTP] request success, navigating...');
         show('OTP sent successfully', 'success');
-        setStep('verify');
-        setCodeDigits(['','','','','','']);
-        inputs.current[0]?.focus();
-        if (res.data?.expiresIn) {
-          setCountdown(Math.min(60, Math.max(30, Math.floor(res.data.expiresIn / 6))));
-        }
+        
+        // Use simpler navigation with string path
+        const targetPath = `/(auth)/verify-email?email=${encodeURIComponent(email)}&expiresIn=${res.data?.expiresIn || 300}`;
+        console.log('[OTP] navigating to:', targetPath);
+        
+        // Use replace instead of push if we want to prevent going back to request form easily, 
+        // but push is fine. Using setTimeout to ensure state updates clear first.
+        setTimeout(() => {
+            router.push(targetPath as any);
+        }, 100);
+      } else {
+        console.log('[OTP] response indicated failure:', res);
+        show(res?.message || 'Failed to send OTP', 'error');
       }
     } catch (e) {
       const msg = (e as any)?.response?.data?.message || 'Failed to send OTP';
@@ -63,70 +50,20 @@ export default function Otp (){
     }
   }
 
-  async function handleVerify() {
-    const code = codeDigits.join('');
-    if (code.length !== 6) return;
-    try {
-      setVerifying(true);
-      const payload = { phoneNumber: normalizePhone(phone), email, otp: code, userType: 'owner' };
-      console.log('[OTP] verify payload', payload);
-      const res = await verifyOtp(payload);
-      if (res?.success) {
-        console.log('[OTP] verify success', res?.message ?? 'Authentication successful', res);
-        show('Authentication successful', 'success');
-        router.replace('/');
-      }
-    } catch (e) {
-      const msg = (e as any)?.response?.data?.message || 'Invalid or expired code';
-      console.log('[OTP] verify error', msg, (e as any)?.response?.data || e);
-      show(msg, 'error');
-    } finally {
-      setVerifying(false);
-    }
-  }
-
-  function updateDigit(index: number, value: string) {
-    if (value.length > 1) {
-      const chars = value.replace(/\D/g, '').slice(0, 6).split('');
-      const next = [...codeDigits];
-      for (let i = 0; i < 6; i++) next[i] = chars[i] || '';
-      setCodeDigits(next);
-      const nextEmpty = next.findIndex((d) => d === '');
-      if (nextEmpty >= 0) inputs.current[nextEmpty]?.focus();
-      else inputs.current[5]?.blur();
-      return;
-    }
-    const digit = value.replace(/\D/g, '').slice(0, 1);
-    const next = [...codeDigits];
-    next[index] = digit;
-    setCodeDigits(next);
-    if (digit) {
-      if (index < 5) inputs.current[index + 1]?.focus();
-      else inputs.current[index]?.blur();
-    }
-  }
-
-  function handleKeyPress(index: number, key: string) {
-    if (key === 'Backspace' && !codeDigits[index] && index > 0) {
-      inputs.current[index - 1]?.focus();
-    }
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-[#093275]">
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={24}>
         <View className="px-6 pt-6">
-          <Text className="text-white text-2xl font-bold">BrodaMeko</Text>
+          <Text className="text-white text-center pb-10 text-3xl font-bold">BrodaMeko</Text>
           <Pressable onPress={() => router.back()}>
-            <Text className="text-white mt-2">{'< Back'}</Text>
+            <Text className="text-white mt-2">{'<  Back'}</Text>
           </Pressable>
         </View>
 
-        {step === 'request' && (
-          <View className="flex-1 px-6 mt-6">
+        <View className="flex-1 px-6 mt-2">
             <Text className="text-white text-2xl font-semibold">Get Started in Seconds</Text>
             <Text className="text-gray-200 mt-2">
-              Enter your email and phone number. We'll send a one-time code to verify your account.
+              Enter your email. We'll send a one-time code to verify your account.
             </Text>
 
             <Text className="text-white mt-6 mb-2">Email Address</Text>
@@ -137,19 +74,8 @@ export default function Otp (){
               className="h-12 rounded-md bg-[#173b78] px-4 text-white"
               placeholder="Enter email address"
               placeholderTextColor="#93a4c9"
-              returnKeyType="next"
-              autoCapitalize="none"
-            />
-
-            <Text className="text-white mt-6 mb-2">Phone Number</Text>
-            <TextInput
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              className="h-12 rounded-md bg-[#173b78] px-4 text-white"
-              placeholder="Enter phone number"
-              placeholderTextColor="#93a4c9"
               returnKeyType="done"
+              autoCapitalize="none"
             />
 
             <View className="mt-auto mb-6">
@@ -171,59 +97,7 @@ export default function Otp (){
                 </Pressable>
               </View>
             </View>
-          </View>
-        )}
-
-        {step === 'verify' && (
-          <View className="flex-1 px-6 mt-6">
-            <Text className="text-white text-2xl font-semibold">Verify Your Email</Text>
-            <Text className="text-gray-200 mt-2">
-              Enter the verification code sent to{' '}
-              <Text className="text-white font-semibold">{email}</Text>.
-            </Text>
-
-            <View className="flex-row justify-between mt-8">
-              {[0,1,2,3,4,5].map((i) => (
-                <TextInput
-                  key={`d-${i}`}
-                  ref={(el) => (inputs.current[i] = el)}
-                  value={codeDigits[i]}
-                  onChangeText={(v) => updateDigit(i, v)}
-                  onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
-                  keyboardType="number-pad"
-                  className="w-12 h-12 rounded-md bg-[#173b78] text-white text-center"
-                  maxLength={6}
-                />
-              ))}
-            </View>
-
-            <View className="mt-4">
-              {countdown > 0 ? (
-                <Text className="text-gray-200">
-                  Didn’t receive the code? <Text className="text-yellow-400">Resend in {countdown}s</Text>
-                </Text>
-              ) : (
-                <Pressable onPress={handleSend}>
-                  <Text className="text-yellow-400">Resend code</Text>
-                </Pressable>
-              )}
-            </View>
-
-            <View className="mt-auto mb-6">
-              <TouchableOpacity
-                disabled={verifying}
-                onPress={handleVerify}
-                className="bg-yellow-400 rounded-lg h-12 items-center justify-center"
-              >
-                {verifying ? (
-                  <ActivityIndicator color="#000" />
-                ) : (
-                  <Text className="text-black font-semibold">Verify Number</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

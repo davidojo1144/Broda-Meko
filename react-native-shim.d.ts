@@ -13,4 +13,5 @@ declare module 'react-native' {
   export const Platform: any;
   export const Animated: any;
   export const Easing: any;
+  export const ScrollView: any;
 }
